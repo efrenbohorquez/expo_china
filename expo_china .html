@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor de Presentación - Ruta Digital y Cuba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Basic body styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            margin: 0;
+            padding: 1rem; /* Add padding for smaller viewports */
+            display: flex;
+            flex-direction: column; /* Stack container and controls */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Container for the presentation slides */
+        #presentation-container {
+            width: 100%; /* Full width within padding */
+            max-width: 1280px; /* Max width like original slides */
+            aspect-ratio: 16 / 9; /* Maintain 16:9 aspect ratio */
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            overflow: hidden; /* Hide slides that are not active */
+            position: relative; /* For absolute positioning inside */
+            border-radius: 8px; /* Slightly rounded corners for the container */
+        }
+
+        /* Individual slide styling */
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute; /* Position slides on top of each other */
+            top: 0;
+            left: 0;
+            opacity: 0; /* Hide slides by default */
+            visibility: hidden; /* Ensure hidden slides are not interactive */
+            transition: opacity 0.5s ease-in-out, visibility 0.5s; /* Smooth transition */
+            display: flex; /* Use flexbox for internal layout */
+            flex-direction: column; /* Stack header, content, footer */
+            background-color: white; /* Ensure background is white */
+            overflow: hidden; /* Prevent content overflow */
+        }
+
+        /* Active slide styling */
+        .slide.active {
+            opacity: 1; /* Show active slide */
+            visibility: visible; /* Make active slide visible */
+            z-index: 1; /* Bring active slide to the front */
+        }
+
+        /* Common slide header/footer styles */
+        .slide-header {
+            background: linear-gradient(90deg, #003366 0%, #0055a4 100%);
+            height: 12px;
+            flex-shrink: 0;
+        }
+        .slide-footer {
+            background: linear-gradient(90deg, #cc0000 0%, #e63946 100%);
+            height: 12px;
+            width: 100%;
+            flex-shrink: 0;
+        }
+         /* Common title/subtitle gradients */
+        .title-gradient {
+            background: linear-gradient(90deg, #003366, #0066cc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .subtitle-gradient {
+            background: linear-gradient(90deg, #990000, #cc0000);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Base slide content style */
+        .slide-content {
+             padding: 1rem 1.5rem; /* Base padding */
+             flex-grow: 1;
+             display: flex;
+             flex-direction: column;
+             position: relative;
+             overflow-y: auto; /* Enable scroll if content exceeds height */
+             height: calc(100% - 24px); /* Full height minus header/footer */
+        }
+
+        /* Styles specific to Slide 1 */
+        .slide-1-content { justify-content: space-between; }
+         .slide-1-flag-bg {
+            position: absolute; right: 1rem; bottom: 1rem; width: 30%; height: 30%; opacity: 0.1;
+            background-image: url('https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.11.0/assets/docs/img/flags-iso/flat/64/CN.png');
+            background-size: contain; background-position: bottom right; background-repeat: no-repeat; z-index: 0;
+        }
+
+        /* Styles specific to Slide 2 */
+        /* Removed empty rule set as it inherits from slide-content */
+        .slide-map-bg { 
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; opacity: 0.04;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Belt_and_Road_Initiative_map.svg/1200px-Belt_and_Road_Initiative_map.svg.png');
+            background-size: cover; background-position: center; z-index: 0;
+        }
+        .highlight-box { background-color: rgba(0, 51, 102, 0.03); border-left: 4px solid #003366; }
+        .countries-count { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: bold; color: #003366; }
+         .presenter-badge {
+            font-size: clamp(0.6rem, 2vw, 0.7rem); background-color: #f3f4f6; border: 1px solid #e5e7eb;
+            padding: 2px 8px; border-radius: 12px; white-space: nowrap;
+         }
+        
+        /* Styles for Slide 3 (Tesis de los Autores) */
+        .slide-3-content {} /* Renamed from slide-new-tesis-content */
+        .silk-road-bg { 
+            position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.04;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d5/Silk_Road_in_the_I_century_AD_-_en.svg');
+            background-size: cover; background-position: center; z-index: 0;
+        }
+        .quote-box { 
+            background-color: rgba(0, 51, 102, 0.03);
+            border-left: 4px solid #003366;
+        }
+        .key-point-box { 
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 51, 102, 0.2);
+            transition: all 0.3s ease;
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+        }
+        .key-point-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .key-point-box .fa-2x { font-size: 1.8em; }
+
+
+        /* Styles specific to Slide 4 (Evolución Digital) */
+        /* Removed empty rule set */
+        .slide-4-timeline-container { position: relative; }
+         .slide-4-timeline { position: relative; padding-left: 20px; margin-left: 10px; } 
+         .slide-4-timeline:before { content: ''; position: absolute; left: 0; top: 5px; bottom: 5px; width: 2px; background: linear-gradient(to bottom, #003366, #0055a4, #cc0000); z-index: 1; }
+         .slide-4-timeline-item { position: relative; padding-bottom: 1rem; padding-left: 15px; } 
+         .slide-4-timeline-item:before { content: ''; position: absolute; left: -28px; top: 5px; height: 12px; width: 12px; border-radius: 50%; background: white; border: 2px solid #0055a4; z-index: 2; }
+         .slide-4-timeline-item:last-child { padding-bottom: 0; }
+         .slide-4-transition-arrow { font-size: clamp(1.5rem, 4vw, 2.5rem); color: #0055a4; flex-shrink: 0; } 
+         .slide-4-stat-container { border-radius: 8px; overflow: hidden; transition: all 0.3s ease; border: 1px solid transparent; } 
+         .slide-4-stat-container:hover { transform: translateY(-4px); box-shadow: 0 6px 12px -3px rgba(0, 0, 0, 0.1); border-color: rgba(0, 85, 164, 0.2); } 
+         .slide-4-digital-tech-bg { 
+             position: absolute; bottom: 5px; right: 5px; width: 25%; height: 25%; opacity: 0.07; 
+             background-image: url('https://cdn-icons-png.flaticon.com/512/2920/2920349.png');
+             background-size: contain; background-position: bottom right; background-repeat: no-repeat; z-index: 0;
+         }
+
+        /* Styles specific to Slide 5 (Actores Tecnológicos) */
+        .company-card {
+             transition: all 0.3s ease; border-radius: 8px; overflow: hidden; height: 100%;
+             display: flex; flex-direction: column;
+         }
+         .company-card:hover { transform: translateY(-4px); box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1); }
+         .company-logo { height: 35px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+         .company-logo i { font-size: clamp(1.5rem, 3vw, 1.8rem); }
+         .market-share { height: 6px; background-color: #e5e7eb; border-radius: 3px; overflow: hidden; margin-top: auto; }
+         .market-share-fill { height: 100%; background: linear-gradient(90deg, #003366, #0066cc); transition: width 0.5s ease-out; }
+         .tech-icon-bg {
+             position: absolute; bottom: 5px; right: 5px; width: 20%; height: 20%; opacity: 0.05;
+             background-image: url('https://cdn-icons-png.flaticon.com/512/6295/6295417.png');
+             background-size: contain; background-position: bottom right; background-repeat: no-repeat; z-index: 0;
+         }
+
+        /* Styles specific to Slide 6 (Implementación Regional) */
+        /* Removed empty rule set */
+        .slide-6-world-map-bg { 
+             position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.03;
+             background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg');
+             background-size: cover; background-position: center; z-index: 0;
+         }
+         .region-card {
+             transition: all 0.2s ease; border-width: 1px; border-radius: 8px;
+             background-color: white; height: 100%; display: flex; flex-direction: column;
+         }
+         .region-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+         .region-icon {
+             width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+             border-radius: 50%; margin-bottom: 12px; flex-shrink: 0;
+         }
+         .region-icon i { font-size: 24px; }
+
+        /* Styles specific to Slide 7 (Cuba) */
+        .slide-7-content { }
+        .cuba-map-bg {
+             position: absolute; bottom: 5px; right: 5px; width: 30%; height: 30%; opacity: 0.05;
+             background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bd/Cuba_%28orthographic_projection%29.svg');
+             background-size: contain; background-position: bottom right; background-repeat: no-repeat; z-index: 0;
+         }
+        .feature-card { 
+             transition: all 0.3s ease; border-radius: 8px; overflow: hidden;
+             height: 100%; display: flex; flex-direction: column;
+         }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+        .slide-7-timeline-item {
+            position: relative; padding-left: 10px; margin-bottom: 1rem;
+        }
+        .slide-7-timeline-dot {
+             width: 12px; height: 12px; border-radius: 50%; background-color: #e63946;
+             position: absolute; left: -6px; top: 50%; transform: translateY(-50%); z-index: 2;
+         }
+        .slide-7-timeline-line {
+             position: absolute; left: 0; top: 10px; bottom: 10px; width: 2px;
+             background: linear-gradient(to bottom, #003366, #cc0000); z-index: 1;
+         }
+        .slide-7-highlight-box {
+             background: linear-gradient(135deg, rgba(0, 51, 102, 0.03) 0%, rgba(204, 0, 0, 0.03) 100%);
+             border-left: 4px solid; border-image: linear-gradient(to bottom, #003366, #cc0000) 1;
+         }
+        
+        /* Styles for Slide 8 (Competencia Estratégica) */
+        .slide-8-content {} 
+        .world-tech-bg {
+             position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.03;
+             background-image: url('https://cdn-icons-png.flaticon.com/512/2784/2784487.png');
+             background-size: cover; background-position: center; z-index: 0;
+        }
+        .strategy-card {
+             transition: all 0.3s ease; border-radius: 8px;
+             height: 100%; display: flex; flex-direction: column;
+        }
+        .strategy-card:hover {
+             transform: translateY(-5px);
+             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .vs-badge {
+             width: clamp(40px, 10vw, 60px); height: clamp(40px, 10vw, 60px);
+             display: flex; align-items: center; justify-content: center;
+             border-radius: 50%; background: linear-gradient(135deg, #003366, #cc0000);
+             color: white; font-weight: bold; font-size: clamp(1rem, 5vw, 1.5rem);
+             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+             z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Styles specific to Slide 9 (Colombia) */
+        .slide-9-content {} 
+        .colombia-map-bg {
+            position: absolute; bottom: 5px; right: 5px; width: 30%; height: 30%; opacity: 0.04;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a3/COL_orthographic.svg');
+            background-size: contain; background-position: bottom right; background-repeat: no-repeat; z-index: 0;
+        }
+        .news-item { transition: all 0.3s ease; }
+        .news-item:hover { background-color: rgba(0, 85, 164, 0.04); }
+        .slide-9-colombia-highlight-box { 
+             background: linear-gradient(135deg, rgba(0, 51, 102, 0.03) 0%, rgba(204, 0, 0, 0.03) 100%);
+             border-left: 4px solid;
+             border-image: linear-gradient(to bottom, #003366, #cc0000) 1;
+        }
+
+        /* Styles for Slide 10 (Tendencias Futuras) */
+        .slide-10-content {}
+        .future-tech-bg {
+            position: absolute; bottom: 5px; right: 5px; width: 30%; height: 30%; opacity: 0.04; 
+            background-image: url('https://cdn-icons-png.flaticon.com/512/4616/4616734.png');
+            background-size: contain; background-position: bottom right; background-repeat: no-repeat; z-index: 0;
+        }
+        .trend-card {
+            transition: all 0.3s ease; border-radius: 8px;
+            height: 100%; display: flex; flex-direction: column;
+        }
+        .trend-card:hover {
+            transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        .chart-container { position: relative; height: 200px; width: 100%; } 
+
+        /* Styles for new Slide 11 (Conclusiones) */
+        .slide-11-content {}
+        .conclusion-bg {
+            position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.03;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/2784/2784487.png'); /* Reusing an existing icon, can be changed */
+            background-size: cover; background-position: center; z-index: 0;
+        }
+        .conclusion-card {
+            transition: all 0.3s ease; border-radius: 8px; overflow: hidden;
+            height: 100%; display: flex; flex-direction: column;
+        }
+        .conclusion-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .summary-circle {
+            width: clamp(50px, 10vw, 70px); height: clamp(50px, 10vw, 70px); /* Responsive size */
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: clamp(1.5rem, 4vw, 2rem); /* Responsive icon size */
+            margin-right: 1rem; flex-shrink: 0;
+        }
+
+
+        /* Styles specific to Slide 12 (Bibliography) */
+        .slide-12-content { } /* Renamed from slide-11-content */
+        .bibliography-bg {
+             position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.02;
+             background-image: url('https://cdn-icons-png.flaticon.com/512/29/29302.png');
+             background-size: 10%; background-position: right 10px bottom 10px; background-repeat: no-repeat; z-index: 0;
+        }
+        .reference-item {
+             transition: all 0.2s ease; border-radius: 4px;
+             margin-bottom: 0.25rem; padding: 0.25rem 0.5rem;
+        }
+        .reference-item:hover { background-color: rgba(0, 51, 102, 0.03); }
+        .team-badge {
+             transition: all 0.3s ease; background-color: #e9ecef; border: 1px solid #dee2e6;
+        }
+        .team-badge:hover { transform: translateY(-3px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background-color: #ced4da;}
+
+
+        /* Navigation controls styling */
+        #navigation-controls {
+            margin-top: 1rem; display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;
+        }
+        #navigation-controls button {
+            background-color: #004488; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px;
+            cursor: pointer; font-size: clamp(0.8rem, 2.5vw, 0.9rem); transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #navigation-controls button:hover { background-color: #0055a4; }
+        #navigation-controls button:active { transform: scale(0.95); }
+        #navigation-controls button:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        #slide-counter { font-size: clamp(0.8rem, 2.5vw, 0.9rem); color: #4a5568; min-width: 50px; text-align: center; }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+             .slide-content { padding: 1.5rem 2rem; }
+             .slide-new-tesis-content .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } 
+             .slide-4-content .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } 
+             .slide-5-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+             .slide-6-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+             .slide-7-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+             .slide-8-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+             .slide-9-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+             .slide-10-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+             .slide-11-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } /* Conclusiones */
+             .slide-12-content .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } /* Bibliography */
+        }
+
+        @media (max-width: 1024px) {
+            .slide-new-tesis-content .grid-cols-3 { grid-template-columns: 1fr; }
+            .slide-4-content .grid-cols-3 { grid-template-columns: 1fr; }
+            .slide-4-timeline { padding-left: 15px; margin-left: 5px; }
+            .slide-4-timeline-item:before { left: -23px; height: 10px; width: 10px; top: 7px;}
+            .slide-4-timeline-item { padding-left: 10px; padding-bottom: 0.75rem;}
+            .slide-4-transition-arrow { display: none; } 
+             .slide-4-content .flex.items-center.justify-center.space-x-4 { flex-direction: column; gap: 0.5rem; align-items: stretch; }
+             .slide-4-content .grid-cols-5 { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+        }
+
+        @media (max-width: 768px) {
+            .slide-1-content h1 { font-size: clamp(1.8rem, 5vw, 2.5rem); }
+            .slide-1-content h2 { font-size: clamp(1.1rem, 4vw, 1.5rem); }
+            .slide-1-content .grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+
+            .slide-2-content .grid { grid-template-columns: 1fr; } 
+            .slide-2-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-2-content .flex.items-center.justify-center { flex-direction: column; gap: 1rem; } 
+
+            .slide-new-tesis-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-new-tesis-content .grid-cols-3 { grid-template-columns: 1fr; } 
+            .slide-new-tesis-content .grid-cols-2 { grid-template-columns: 1fr; } 
+
+
+            .slide-4-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-4-content .grid-cols-2 { grid-template-columns: 1fr; } 
+            .slide-4-stat-container .text-3xl { font-size: 1.8rem; } 
+
+            .slide-5-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-5-content .grid-cols-2 { grid-template-columns: 1fr; } 
+            .slide-5-content .grid-cols-2 .grid-cols-2 { grid-template-columns: 1fr; } 
+            .company-card h4 { font-size: 1rem; }
+            .company-card p { font-size: 0.8rem; }
+
+            .slide-6-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-6-content .grid-cols-2 { grid-template-columns: 1fr; } 
+            .region-card h3 { font-size: 1.1rem; }
+            .region-card li span { font-size: 0.8rem; }
+            .slide-6-content .grid-cols-3 { grid-template-columns: 1fr; gap: 0.5rem;} 
+
+            .slide-7-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-7-content .grid-cols-2 { grid-template-columns: 1fr; } 
+            .slide-7-content .grid-cols-2 .grid-cols-2 { grid-template-columns: 1fr; } 
+            .slide-7-highlight-box .text-4xl { font-size: clamp(1.8rem, 5vw, 2.2rem); } 
+            .slide-7-content .feature-card h4 { font-size: 0.9rem; } 
+            .slide-7-content .feature-card p { font-size: 0.75rem; } 
+            .slide-7-content .mt-6 { margin-top: 1rem; } 
+            .slide-7-content .grid-cols-3 { grid-template-columns: 1fr; gap: 0.5rem;} 
+
+            .slide-8-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-8-content .grid-cols-2 { grid-template-columns: 1fr; } 
+            .vs-badge { width: 40px; height: 40px; font-size: 1rem; } 
+            
+            .slide-9-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-9-content .grid-cols-2 { grid-template-columns: 1fr; } 
+            .slide-9-content .feature-card h4, .slide-9-colombia-highlight-box h3, .slide-9-content .bg-gray-50 h3 { font-size: 1.1rem; }
+            .slide-9-content .news-item p, .slide-9-colombia-highlight-box p, .slide-9-content .bg-gray-50 p, .slide-9-content .feature-card li, .slide-9-content .bg-gray-50 li { font-size: 0.8rem; }
+            .slide-9-content .grid-cols-3 { grid-template-columns: 1fr; gap: 0.5rem;}
+
+            .slide-10-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } 
+            .slide-10-content .grid-cols-2 { grid-template-columns: 1fr; }
+            .slide-10-content .trend-card h4 { font-size: 0.9rem; }
+            .slide-10-content .trend-card p { font-size: 0.75rem; }
+            .chart-container { height: 180px; }
+
+            .slide-11-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); } /* Conclusiones */
+            .slide-11-content .grid-cols-2 { grid-template-columns: 1fr; }
+            .summary-circle { width: 60px; height: 60px; font-size: 1.8rem; margin-right: 0.5rem;}
+            .slide-11-content .conclusion-card h3, .slide-11-content .bg-gray-50 h3 { font-size: 1.1rem; }
+            .slide-11-content .conclusion-card p, .slide-11-content .conclusion-card li, .slide-11-content .bg-gray-50 p { font-size: 0.8rem; }
+
+
+            .slide-12-content h2 { font-size: clamp(1.5rem, 4vw, 1.75rem); }  
+            .slide-12-content .grid-cols-2 { grid-template-columns: 1fr; }
+            .slide-12-content .reference-item p { font-size: 0.75rem; }
+            .slide-12-content .flex.justify-around { flex-direction: column; gap: 0.5rem; align-items: center;}
+            .team-badge { width: 80%; }
+        }
+
+         @media (max-width: 480px) {
+             body { padding: 0.5rem; }
+             .slide-content { padding: 0.75rem; }
+             .slide-1-content h1 { font-size: clamp(1.5rem, 6vw, 2rem); }
+             .slide-1-content h2 { font-size: clamp(1rem, 5vw, 1.25rem); }
+             .slide-1-flag-bg { display: none; }
+
+             .slide-2-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-2-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .slide-2-content ul { font-size: clamp(0.8rem, 3vw, 0.9rem); } 
+             .highlight-box, .bg-gray-50, .bg-red-50 { padding: 0.75rem; }
+
+             .slide-new-tesis-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-new-tesis-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .quote-box { padding: 0.75rem; } 
+             .key-point-box { padding: 0.75rem; } 
+             .key-point-box h4 { font-size: 0.9rem; } 
+             .key-point-box p { font-size: 0.7rem; } 
+             .slide-new-tesis-content .grid-cols-2 { gap: 0.5rem; } 
+             .silk-road-bg { display: none; } 
+
+
+             .slide-4-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-4-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .slide-4-timeline h4 { font-size: 0.9rem; } 
+             .slide-4-timeline p { font-size: 0.75rem; } 
+             .slide-4-stat-container { padding: 0.75rem; }
+             .slide-4-stat-container h4 { font-size: 0.7rem; }
+             .slide-4-stat-container .text-3xl { font-size: 1.6rem; }
+             .slide-4-stat-container .text-xs { font-size: 0.65rem; }
+             .slide-4-stat-container i { font-size: 1.2rem; }
+             .slide-4-digital-tech-bg { display: none; }
+
+             .slide-5-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-5-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .slide-5-content .p-5 { padding: 0.75rem; } 
+             .company-card { padding: 0.75rem; }
+             .company-card h4 { font-size: 0.9rem; }
+             .company-card p, .company-card .text-xs { font-size: 0.7rem; }
+             .tech-icon-bg { display: none; }
+
+             .slide-6-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-6-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .region-card { padding: 0.75rem; }
+             .region-icon { width: 40px; height: 40px; margin-bottom: 8px;}
+             .region-icon i { font-size: 20px; }
+             .region-card li span { font-size: 0.75rem; }
+             .slide-6-content .mt-6 { margin-top: 1rem; } 
+             .slide-6-content .grid-cols-3 span { font-size: 0.75rem;} 
+             .slide-6-world-map-bg { display: none; } 
+
+             .slide-7-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-7-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .slide-7-highlight-box { padding: 0.75rem; } 
+             .slide-7-highlight-box .text-4xl { font-size: clamp(1.5rem, 4vw, 1.8rem); } 
+             .slide-7-timeline-container { padding-left: 4px; } 
+             .slide-7-timeline-line { left: -2px; } 
+             .slide-7-timeline-dot { left: -8px; width:10px; height:10px;} 
+             .slide-7-content .feature-card { padding: 0.5rem; } 
+             .slide-7-content .feature-card h4 { font-size: 0.8rem; } 
+             .slide-7-content .feature-card p { font-size: 0.7rem; } 
+             .slide-7-content .bg-red-50, .slide-7-content .bg-gray-50 { padding: 0.75rem; } 
+             .slide-7-content .grid-cols-3 span { font-size: 0.7rem;} 
+             .cuba-map-bg { display: none; }
+
+             .slide-8-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-8-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); } 
+             .strategy-card { padding: 0.75rem; } 
+             .strategy-card h4 { font-size: 0.9rem; } 
+             .strategy-card p, .strategy-card li { font-size: 0.7rem; } 
+             .world-tech-bg { display: none; } 
+
+
+             .slide-9-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-9-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); }
+             .slide-9-colombia-highlight-box, .slide-9-content .bg-gray-50, .slide-9-content .feature-card { padding: 0.75rem; }
+             .news-item p, .slide-9-colombia-highlight-box p, .slide-9-content .bg-gray-50 p, .slide-9-content .feature-card li, .slide-9-content .bg-gray-50 li { font-size: 0.7rem; }
+             .slide-9-content .grid-cols-3 span { font-size: 0.7rem;}
+             .colombia-map-bg { display: none; }
+
+             .slide-10-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-10-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); }
+             .slide-10-content .trend-card { padding: 0.5rem; }
+             .slide-10-content .trend-card h4 { font-size: 0.8rem; }
+             .slide-10-content .trend-card p { font-size: 0.7rem; }
+             .chart-container { height: 150px; } 
+             .future-tech-bg { display: none; }
+
+             .slide-11-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } /* Conclusiones */
+             .slide-11-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); }
+             .summary-circle { width: 40px; height: 40px; font-size: 1.2rem; margin-right: 0.5rem;}
+             .slide-11-content .conclusion-card, .slide-11-content .bg-gray-50 { padding: 0.75rem; }
+             .slide-11-content .conclusion-card p, .slide-11-content .conclusion-card li, .slide-11-content .bg-gray-50 p { font-size: 0.7rem; }
+             .conclusion-bg { display: none; }
+             
+             .slide-12-content h2 { font-size: clamp(1.3rem, 5vw, 1.5rem); } 
+             .slide-12-content h3 { font-size: clamp(1rem, 4vw, 1.1rem); }
+             .slide-12-content .reference-item p { font-size: 0.7rem; line-height: 1.3; }
+             .team-badge { width: 90%; padding: 0.5rem; }
+             .team-badge p {font-size: 0.8rem;}
+             .team-badge .text-xs { font-size: 0.65rem;}
+             .bibliography-bg { display: none; }
+         }
+
+    </style>
+</head>
+<body>
+
+    <div id="presentation-container">
+
+        <div class="slide active" id="slide-1">
+            <div class="slide-header"></div>
+            <div class="slide-content slide-1-content">
+                <div class="z-10 space-y-2 md:space-y-4 mt-4 md:mt-8">
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold title-gradient tracking-tight">La Ruta Digital dentro de la Iniciativa de la Franja y la Ruta</h1>
+                    <h2 class="text-xl sm:text-2xl lg:text-3xl font-semibold subtitle-gradient mt-1 md:mt-2">La relevancia de Cuba en el Gran Caribe</h2>
+                    <div class="mt-4 md:mt-8 text-gray-600 text-sm md:text-lg">
+                        <p>Basado en el trabajo de Sunamis Fabelo Concepción y Ruvislei González Sáez</p>
+                    </div>
+                </div>
+                <div class="z-10 mt-4 md:mt-8 mb-4">
+                    <h3 class="text-base md:text-xl font-medium mb-3 md:mb-4 text-gray-700">Presentado por:</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3 text-center">
+                        <div class="p-2 bg-gray-50 rounded-lg shadow-sm"><p class="text-xs md:text-base font-medium text-gray-800">Marta Rocio Gomez G</p><p class="text-[10px] md:text-xs text-gray-600">Intro & Tesis</p></div>
+                        <div class="p-2 bg-gray-50 rounded-lg shadow-sm"><p class="text-xs md:text-base font-medium text-gray-800">Liliana Rocío Guarín C</p><p class="text-[10px] md:text-xs text-gray-600">Evolución Digital</p></div>
+                        <div class="p-2 bg-gray-50 rounded-lg shadow-sm"><p class="text-xs md:text-base font-medium text-gray-800">Efrén Bohorquez V</p><p class="text-[10px] md:text-xs text-gray-600">Impl. Regional</p></div>
+                        <div class="p-2 bg-gray-50 rounded-lg shadow-sm"><p class="text-xs md:text-base font-medium text-gray-800">Juan Sebastian Lopez</p><p class="text-[10px] md:text-xs text-gray-600">Cuba en RSD</p></div>
+                        <div class="p-2 bg-gray-50 rounded-lg shadow-sm"><p class="text-xs md:text-base font-medium text-gray-800">Verónica Abuabara</p><p class="text-[10px] md:text-xs text-gray-600">Consecuencias y Tendencias</p></div>
+                    </div>
+                </div>
+                <div class="slide-1-flag-bg"></div>
+            </div>
+            <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-2"> 
+             <div class="slide-header"></div>
+             <div class="slide-content slide-2-content"> 
+                 <div class="slide-map-bg"></div>
+                 <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                     <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Introducción al Tema</h2> 
+                     <span class="presenter-badge ml-auto">Presentado por: <strong>Marta Rocio Gomez G</strong></span>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 flex-grow z-10 overflow-y-auto">
+                     <div class="space-y-4 md:space-y-6">
+                         <div class="highlight-box p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-2 text-gray-800">Tesis Principal</h3>
+                             <p class="text-xs md:text-sm lg:text-base text-gray-700 mb-2">
+                                 La Ruta de la Seda Digital constituye una dimensión estratégica fundamental de la Iniciativa de la Franja y la Ruta de China, orientada a extender infraestructuras, plataformas y estándares tecnológicos chinos globalmente.
+                             </p>
+                             <p class="text-xs md:text-sm lg:text-base text-gray-700">
+                                 Este nuevo eje de competencia y cooperación internacional está transformando las relaciones económicas y geopolíticas mundiales.
+                             </p>
+                         </div>
+                         <div>
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-2 text-gray-800">Componentes clave</h3>
+                             <ul class="space-y-1 md:space-y-2 text-xs md:text-sm lg:text-base text-gray-700">
+                                 <li class="flex items-start"><i class="fas fa-network-wired text-blue-700 mt-1 mr-2 fa-fw"></i><span>Infraestructura digital (cables submarinos, 5G, satélites)</span></li>
+                                 <li class="flex items-start"><i class="fas fa-cloud text-blue-700 mt-1 mr-2 fa-fw"></i><span>Plataformas de servicios digitales (e-commerce, cloud)</span></li>
+                                 <li class="flex items-start"><i class="fas fa-cogs text-blue-700 mt-1 mr-2 fa-fw"></i><span>Estándares tecnológicos propios (televisión digital, redes)</span></li>
+                                 <li class="flex items-start"><i class="fas fa-mobile-alt text-blue-700 mt-1 mr-2 fa-fw"></i><span>Dispositivos y aplicaciones de consumo digital</span></li>
+                             </ul>
+                         </div>
+                     </div>
+                     <div class="space-y-4 md:space-y-6">
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-2 text-gray-800">Alcance Global de la Iniciativa</h3>
+                             <div class="flex items-center justify-around gap-2 md:gap-4">
+                                 <div class="text-center">
+                                     <div class="countries-count">140+</div><p class="text-[10px] md:text-xs text-gray-600">Países incorporados</p>
+                                 </div>
+                                 <div class="text-center">
+                                     <div class="countries-count">34.8%</div><p class="text-[10px] md:text-xs text-gray-600">del PIB digital de China</p>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="p-3 md:p-4 rounded-lg shadow-sm bg-red-50">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-2 subtitle-gradient">El Papel de Cuba</h3>
+                             <p class="text-xs md:text-sm lg:text-base text-gray-700 mb-2">Cuba destaca como caso emblemático en el Gran Caribe al ser:</p>
+                             <ul class="space-y-1 text-xs md:text-sm lg:text-base text-gray-700">
+                                 <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1 fa-fw"></i><span>El primer y único país del continente americano integrado a la Ruta de la Seda Digital (2016)</span></li>
+                                 <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1 fa-fw"></i><span>El primero en adoptar la norma china de televisión digital en el hemisferio occidental</span></li>
+                                 <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1 fa-fw"></i><span>Un modelo potencial para la expansión en la región caribeña y latinoamericana</span></li>
+                             </ul>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-new-tesis">
+            <div class="slide-header"></div>
+            <div class="slide-content slide-new-tesis-content">
+                <div class="silk-road-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Tesis de los Autores</h2>
+                    <span class="presenter-badge ml-auto">Presentado por: <strong>Liliana Rocío Guarín C</strong></span>
+                </div>
+                <div class="flex-grow z-10 flex flex-col justify-around">
+                    <div class="quote-box p-4 md:p-6 rounded-lg shadow-sm mb-4 md:mb-6">
+                        <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-2 text-gray-800">Tesis Principal</h3>
+                        <p class="text-gray-700 italic text-xs md:text-sm lg:text-base">
+                            "La Ruta de la Seda Digital, planteada como una segunda fase que complementa los proyectos de infraestructuras, se ha convertido en el medio de expansión de plataformas y estándares chinos en destinos estratégicos que están configurando el ascenso de China como potencia global." (Parra, 2020)
+                        </p>
+                    </div>
+                    
+                    <div class="mb-4 md:mb-6">
+                        <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Estructura del Análisis</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                            <div class="key-point-box bg-white p-3 md:p-4 shadow-sm">
+                                <div class="text-blue-700 mb-1 md:mb-2 text-center"><i class="fas fa-history fa-lg md:fa-2x"></i></div>
+                                <h4 class="font-medium text-sm md:text-base lg:text-lg mb-1 text-center">Evolución Histórica</h4>
+                                <p class="text-gray-600 text-[10px] md:text-xs flex-grow">Proceso de reforma y apertura, transición "Made in China" a "Designed in China"</p>
+                            </div>
+                            <div class="key-point-box bg-white p-3 md:p-4 shadow-sm">
+                                <div class="text-blue-700 mb-1 md:mb-2 text-center"><i class="fas fa-globe-americas fa-lg md:fa-2x"></i></div>
+                                <h4 class="font-medium text-sm md:text-base lg:text-lg mb-1 text-center">Implementación Regional</h4>
+                                <p class="text-gray-600 text-[10px] md:text-xs flex-grow">Análisis de la Ruta Digital en Europa, Rusia, África, ALC</p>
+                            </div>
+                            <div class="key-point-box bg-white p-3 md:p-4 shadow-sm">
+                                <div class="text-blue-700 mb-1 md:mb-2 text-center"><i class="fas fa-chess fa-lg md:fa-2x"></i></div>
+                                <h4 class="font-medium text-sm md:text-base lg:text-lg mb-1 text-center">Competencia Estratégica</h4>
+                                <p class="text-gray-600 text-[10px] md:text-xs flex-grow">Confrontación EEUU, propuestas alternativas y consecuencias</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Argumentos Principales</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-start"><div class="bg-red-100 rounded-full p-1.5 mr-2 mt-1"><i class="fas fa-microchip text-red-700 text-sm"></i></div>
+                                <div><h4 class="font-medium text-gray-800 text-sm mb-1">Transición Económica</h4><p class="text-gray-600 text-xs">China de manufactura a innovación.</p></div></div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-start"><div class="bg-red-100 rounded-full p-1.5 mr-2 mt-1"><i class="fas fa-sitemap text-red-700 text-sm"></i></div>
+                                <div><h4 class="font-medium text-gray-800 text-sm mb-1">Infraestructura Digital</h4><p class="text-gray-600 text-xs">Cables, 5G, estándares, plataformas.</p></div></div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-start"><div class="bg-red-100 rounded-full p-1.5 mr-2 mt-1"><i class="fas fa-industry text-red-700 text-sm"></i></div>
+                                <div><h4 class="font-medium text-gray-800 text-sm mb-1">Titanes Tecnológicos</h4><p class="text-gray-600 text-xs">Huawei, BATX impulsan economía digital.</p></div></div>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-start"><div class="bg-red-100 rounded-full p-1.5 mr-2 mt-1"><i class="fas fa-flag text-red-700 text-sm"></i></div>
+                                <div><h4 class="font-medium text-gray-800 text-sm mb-1">Cuba: Caso Emblemático</h4><p class="text-gray-600 text-xs">Integración temprana, modelo regional.</p></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-4">
+             <div class="slide-header"></div>
+             <div class="slide-content slide-4-content">
+                 <div class="slide-4-digital-tech-bg"></div> 
+                 <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                     <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Evolución del Escenario Digital Chino</h2>
+                     <span class="presenter-badge ml-auto">Presentado por: <strong>Liliana Rocío Guarín C</strong></span>
+                 </div>
+                 <div class="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 z-10 overflow-y-auto">
+                     <div class="lg:col-span-1">
+                         <div class="slide-4-timeline-container h-full"> 
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800 sticky top-0 bg-white py-1">Hitos Claves</h3>
+                             <div class="slide-4-timeline"> 
+                                 <div class="slide-4-timeline-item"><h4 class="text-sm md:text-base font-medium text-gray-800">1978</h4><p class="text-xs md:text-sm text-gray-600">Inicio del proceso de Reforma y Apertura</p></div>
+                                 <div class="slide-4-timeline-item"><h4 class="text-sm md:text-base font-medium text-gray-800">1995</h4><p class="text-xs md:text-sm text-gray-600">"Hacer florecer al país mediante ciencias y educación"</p></div>
+                                 <div class="slide-4-timeline-item"><h4 class="text-sm md:text-base font-medium text-gray-800">2005</h4><p class="text-xs md:text-sm text-gray-600">Plan Nacional para desarrollo científico y tecnológico</p></div>
+                                 <div class="slide-4-timeline-item"><h4 class="text-sm md:text-base font-medium text-gray-800">2011-2015</h4><p class="text-xs md:text-sm text-gray-600">XII Plan Quinquenal: consolidación de proyección como potencia basada en conocimiento</p></div>
+                                 <div class="slide-4-timeline-item"><h4 class="text-sm md:text-base font-medium text-gray-800">2017</h4><p class="text-xs md:text-sm text-gray-600">Plan de Desarrollo sobre la Nueva Generación de IA para 2030</p></div>
+                                 <div class="slide-4-timeline-item"><h4 class="text-sm md:text-base font-medium text-gray-800">2021-2025</h4><p class="text-xs md:text-sm text-gray-600">XIV Plan Quinquenal: foco en innovación, tecnologías fundamentales y carrera 6G</p></div>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="lg:col-span-2 space-y-4 md:space-y-6">
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Transición Estratégica</h3>
+                             <div class="flex flex-col md:flex-row items-center justify-center gap-2 md:space-x-4">
+                                 <div class="text-center p-3 bg-blue-50 rounded-lg border border-blue-100 w-full md:w-auto"><div class="text-base md:text-lg font-bold text-blue-800 mb-1">Made in China</div><div class="text-xs md:text-sm text-gray-600">Manufactura y producción</div></div>
+                                 <div class="slide-4-transition-arrow hidden md:block">→</div>
+                                 <div class="text-center p-3 bg-red-50 rounded-lg border border-red-100 w-full md:w-auto"><div class="text-base md:text-lg font-bold text-red-800 mb-1">Designed in China</div><div class="text-xs md:text-sm text-gray-600">Innovación y desarrollo propio</div></div>
+                             </div>
+                             <p class="text-gray-600 text-xs md:text-sm mt-3">China ha generado las condiciones necesarias para dejar atrás su desarrollo basado en manufactura y avanzar hacia una nueva etapa apoyada en la innovación, convirtiéndose en un promotor de tecnología propia.</p>
+                         </div>
+                         <div class="grid grid-cols-2 gap-3 md:gap-4">
+                             <div class="slide-4-stat-container bg-gradient-to-br from-blue-50 to-blue-100 p-3"><h4 class="text-xs font-medium text-blue-900 mb-1">Meta GBID/PIB</h4><div class="flex justify-between items-center"><div class="text-xl md:text-2xl font-bold text-blue-700">2.5%</div><i class="fas fa-chart-line text-blue-400 text-lg md:text-xl"></i></div><p class="text-[10px] md:text-xs text-blue-700 mt-1">Inversión en I+D (2020)</p></div>
+                             <div class="slide-4-stat-container bg-gradient-to-br from-red-50 to-red-100 p-3"><h4 class="text-xs font-medium text-red-900 mb-1">Economía Digital</h4><div class="flex justify-between items-center"><div class="text-xl md:text-2xl font-bold text-red-700">34.8%</div><i class="fas fa-laptop-code text-red-400 text-lg md:text-xl"></i></div><p class="text-[10px] md:text-xs text-red-700 mt-1">del PIB de China</p></div>
+                             <div class="slide-4-stat-container bg-gradient-to-br from-red-50 to-red-100 p-3"><h4 class="text-xs font-medium text-red-900 mb-1">Comercio electrónico</h4><div class="flex justify-between items-center"><div class="text-xl md:text-2xl font-bold text-red-700">42%</div><i class="fas fa-shopping-cart text-red-400 text-lg md:text-xl"></i></div><p class="text-[10px] md:text-xs text-red-700 mt-1">del mercado global</p></div>
+                             <div class="slide-4-stat-container bg-gradient-to-br from-blue-50 to-blue-100 p-3"><h4 class="text-xs font-medium text-blue-900 mb-1">Inversión IA</h4><div class="flex justify-between items-center"><div class="text-xl md:text-2xl font-bold text-blue-700">$21.6B</div><i class="fas fa-robot text-blue-400 text-lg md:text-xl"></i></div><p class="text-[10px] md:text-xs text-blue-700 mt-1">Estimado para 2030</p></div>
+                         </div>
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Gigantes Tecnológicos Chinos</h3>
+                             <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                 <div class="bg-white p-2 rounded text-center shadow-sm"><h5 class="font-medium text-blue-800 text-xs md:text-sm">Huawei</h5><span class="text-[10px] text-gray-500 block">Telecomunicaciones, 5G</span></div>
+                                 <div class="bg-white p-2 rounded text-center shadow-sm"><h5 class="font-medium text-blue-800 text-xs md:text-sm">Alibaba</h5><span class="text-[10px] text-gray-500 block">E-commerce, Cloud</span></div>
+                                 <div class="bg-white p-2 rounded text-center shadow-sm"><h5 class="font-medium text-blue-800 text-xs md:text-sm">Tencent</h5><span class="text-[10px] text-gray-500 block">Redes sociales, FinTech</span></div>
+                                 <div class="bg-white p-2 rounded text-center shadow-sm"><h5 class="font-medium text-blue-800 text-xs md:text-sm">Baidu</h5><span class="text-[10px] text-gray-500 block">Búsqueda, IA</span></div>
+                                 <div class="bg-white p-2 rounded text-center shadow-sm"><h5 class="font-medium text-blue-800 text-xs md:text-sm">ByteDance</h5><span class="text-[10px] text-gray-500 block">Contenido digital (TikTok)</span></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+             <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-5">
+             <div class="slide-header"></div>
+             <div class="slide-content slide-5-content"> 
+                 <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                     <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Principales Actores Tecnológicos</h2>
+                     <span class="presenter-badge ml-auto">Presentado por: <strong>Efrén Bohorquez V</strong></span>
+                 </div>
+                 <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 z-10 overflow-y-auto">
+                     <div class="space-y-4 md:space-y-6">
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Gigantes en la Ruta Digital</h3>
+                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-blue-700"><i class="fas fa-broadcast-tower"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Huawei & ZTE</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">Telecom y 5G.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>5G:</span><span class="font-medium">91 países</span></div><div class="market-share"><div class="market-share-fill" style="width: 38%"></div></div></div>
+                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-red-700"><i class="fas fa-shopping-cart"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Alibaba</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">E-comm, fintech, cloud.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>E-comm:</span><span class="font-medium">42% global</span></div><div class="market-share"><div class="market-share-fill" style="width: 42%"></div></div></div>
+                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-blue-700"><i class="fas fa-comment-dots"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Tencent</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">WeChat, digital, IA.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>WeChat:</span><span class="font-medium">1.1B+</span></div><div class="market-share"><div class="market-share-fill" style="width: 35%"></div></div></div>
+                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-red-700"><i class="fas fa-search"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Baidu & ByteDance</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">Búsqueda, IA, TikTok.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>Presencia:</span><span class="font-medium">150+</span></div><div class="market-share"><div class="market-share-fill" style="width: 30%"></div></div></div>
+                             </div>
+                         </div>
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Infraestructura</h3>
+                             <div class="space-y-3">
+                                 <div class="flex items-start"><div class="bg-blue-100 rounded-full p-2 mr-3 flex-shrink-0"><i class="fas fa-network-wired text-blue-700 fa-fw"></i></div><div><h4 class="font-medium text-sm md:text-base text-gray-800 mb-1">Operadores</h4><p class="text-gray-600 text-xs md:text-sm">Cables submarinos.</p></div></div>
+                                 <div class="flex items-start"><div class="bg-red-100 rounded-full p-2 mr-3 flex-shrink-0"><i class="fas fa-satellite-dish text-red-700 fa-fw"></i></div><div><h4 class="font-medium text-sm md:text-base text-gray-800 mb-1">Beidou</h4><p class="text-gray-600 text-xs md:text-sm">Alternativa GPS.</p></div></div>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="space-y-4 md:space-y-6">
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Estrategia Global</h3>
+                             <div class="space-y-3">
+                                 <div class="flex items-start"><div class="bg-blue-100 rounded-full p-2 mr-3 flex-shrink-0"><i class="fas fa-globe text-blue-700 fa-fw"></i></div><div><h4 class="font-medium text-sm md:text-base text-gray-800 mb-1">Exportación Modelos</h4><p class="text-gray-600 text-xs md:text-sm">Adaptación local.</p></div></div>
+                                 <div class="flex items-start"><div class="bg-blue-100 rounded-full p-2 mr-3 flex-shrink-0"><i class="fas fa-file-contract text-blue-700 fa-fw"></i></div><div><h4 class="font-medium text-sm md:text-base text-gray-800 mb-1">Estándares Tech</h4><p class="text-gray-600 text-xs md:text-sm">Promoción estándares.</p></div></div>
+                                 <div class="flex items-start"><div class="bg-blue-100 rounded-full p-2 mr-3 flex-shrink-0"><i class="fas fa-wallet text-blue-700 fa-fw"></i></div><div><h4 class="font-medium text-sm md:text-base text-gray-800 mb-1">Sistemas Financieros</h4><p class="text-gray-600 text-xs md:text-sm">CIPS, Yuan digital.</p></div></div>
+                             </div>
+                         </div>
+                         <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                             <h3 class="text-base md:text-lg lg:text-xl font-semibold mb-3 text-gray-800">Proyectos</h3>
+                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                 <div class="company-card bg-white p-2 shadow-sm"><h4 class="font-medium text-blue-800 text-sm mb-1">Smart Cities</h4><p class="text-xs text-gray-600">Alibaba</p></div>
+                                 <div class="company-card bg-white p-2 shadow-sm"><h4 class="font-medium text-blue-800 text-sm mb-1">Cable China-Pak</h4><p class="text-xs text-gray-600">820km</p></div>
+                                 <div class="company-card bg-white p-2 shadow-sm"><h4 class="font-medium text-blue-800 text-sm mb-1">2África</h4><p class="text-xs text-gray-600">Cable</p></div>
+                                 <div class="company-card bg-white p-2 shadow-sm"><h4 class="font-medium text-blue-800 text-sm mb-1">New IP</h4><p class="text-xs text-gray-600">Protocolo</p></div>
+                             </div>
+                         </div>
+                         <div class="bg-blue-50 p-3 md:p-4 rounded-lg shadow-sm border-l-4 border-blue-400">
+                             <blockquote class="text-gray-700 italic text-xs md:text-sm">"...si no colocan sus productos en el mercado chino, perderán su partido con el futuro."</blockquote>
+                             <cite class="block text-right mt-2 text-blue-700 font-medium text-[10px] md:text-xs">— Jack Ma</cite>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="tech-icon-bg"></div>
+             </div>
+             <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-6">
+             <div class="slide-header"></div>
+             <div class="slide-content slide-6-content"> 
+                 <div class="slide-6-world-map-bg"></div> 
+                 <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                     <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Implementación Regional de la Ruta Digital</h2>
+                     <span class="presenter-badge ml-auto">Presentado por: <strong>Efrén Bohorquez V</strong></span> 
+                 </div>
+                  <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 z-10 overflow-y-auto">
+                     <div class="region-card p-3 md:p-4 shadow-sm border-blue-100">
+                         <div class="flex items-start mb-2">
+                             <div class="region-icon bg-blue-50 mr-3"><i class="fas fa-landmark text-blue-700"></i></div>
+                             <h3 class="text-lg md:text-xl font-semibold text-blue-800 mt-2">Europa</h3>
+                         </div>
+                         <ul class="space-y-1 text-xs md:text-sm flex-grow">
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Implementación del estándar 5G impulsado por Huawei</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Tensiones geopolíticas: preocupaciones sobre soberanía digital</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Laboratorios de ciberseguridad en Alemania y Reino Unido para demostrar seguridad</span></li>
+                             <li class="flex items-start"><i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Resistencia y vetos en algunos países europeos (Reino Unido)</span></li>
+                         </ul>
+                     </div>
+                     <div class="region-card p-3 md:p-4 shadow-sm border-red-100">
+                          <div class="flex items-start mb-2">
+                             <div class="region-icon bg-red-50 mr-3"><i class="fas fa-chess-rook text-red-700"></i></div>
+                             <h3 class="text-lg md:text-xl font-semibold text-red-800 mt-2">Rusia</h3>
+                         </div>
+                         <ul class="space-y-1 text-xs md:text-sm flex-grow">
+                             <li class="flex items-start"><i class="fas fa-check-circle text-red-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Cooperación entre sistemas de navegación: GLONASS (Rusia) y Beidou (China)</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-red-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Acuerdos sobre implementación de redes 5G en territorio ruso (2019)</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-red-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Alibaba controla 10% del Grupo Mail.Ru (redes sociales rusas, incluida VK)</span></li>
+                             <li class="flex items-start"><i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Proyecto RuNet: alternativa nacional al internet global como respuesta a sanciones occidentales</span></li>
+                         </ul>
+                     </div>
+                     <div class="region-card p-3 md:p-4 shadow-sm border-blue-100">
+                         <div class="flex items-start mb-2">
+                             <div class="region-icon bg-blue-50 mr-3"><i class="fas fa-tree text-blue-700"></i></div>
+                             <h3 class="text-lg md:text-xl font-semibold text-blue-800 mt-2">África</h3>
+                         </div>
+                         <ul class="space-y-1 text-xs md:text-sm flex-grow">
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Proyecto 2África: cable submarino que rodea el continente (China Mobile + Facebook)</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Expansión de tecnologías de pagos en línea: Alipay, WeChat Pay, UnionPay</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Implementación de ciudades industriales integradas y proyectos culturales</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-blue-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Cooperación Sur-Sur: transferencia tecnológica, formación de personal, proyectos socioeconómicos</span></li>
+                         </ul>
+                     </div>
+                     <div class="region-card p-3 md:p-4 shadow-sm border-red-100">
+                          <div class="flex items-start mb-2">
+                             <div class="region-icon bg-red-50 mr-3"><i class="fas fa-globe-americas text-red-700"></i></div>
+                             <h3 class="text-lg md:text-xl font-semibold text-red-800 mt-2">América Latina y Caribe</h3>
+                         </div>
+                         <ul class="space-y-1 text-xs md:text-sm flex-grow">
+                             <li class="flex items-start"><i class="fas fa-check-circle text-red-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Presencia de Huawei en 20 países latinoamericanos (9.4% del mercado de celulares)</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-red-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Despliegue de redes 5G y apertura de centros de datos para soluciones cloud</span></li>
+                             <li class="flex items-start"><i class="fas fa-check-circle text-red-600 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Expansión de DiDi Chuxing (participada por Tencent y Alibaba) en Brasil, México, Chile, Perú y Colombia</span></li>
+                             <li class="flex items-start"><i class="fas fa-star text-yellow-500 mt-1 mr-2 fa-fw"></i><span class="text-gray-700 font-medium">Cuba: primer país del continente en incorporarse a la Ruta de la Seda Digital (2016)</span></li>
+                         </ul>
+                     </div>
+                 </div>
+                  <div class="mt-4 bg-gray-50 p-3 rounded-lg shadow-sm border-l-4 border-blue-400 z-10 flex-shrink-0">
+                     <h3 class="text-sm md:text-base font-medium mb-2 text-gray-800">Claves de la Implementación Regional</h3>
+                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                         <div class="flex items-start"><i class="fas fa-network-wired text-blue-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Expansión de infraestructura física (cables submarinos) y servicios digitales (5G, IA)</span></div>
+                         <div class="flex items-start"><i class="fas fa-handshake text-blue-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Cooperación adaptada a las necesidades de cada región y país</span></div>
+                         <div class="flex items-start"><i class="fas fa-balance-scale text-blue-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Regionalización digital como respuesta a tensiones geopolíticas con EEUU</span></div>
+                     </div>
+                 </div>
+             </div> <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-7">
+            <div class="slide-header"></div>
+            <div class="slide-content slide-7-content"> 
+                <div class="cuba-map-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">El Papel de Cuba en la Ruta Digital</h2>
+                    <span class="presenter-badge ml-auto">Presentado por: <strong>Juan Sebastian Lopez</strong></span>
+                </div>
+
+                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 z-10 overflow-y-auto">
+                    <div class="space-y-4">
+                        <div class="slide-7-highlight-box p-3 md:p-4 rounded-lg shadow-sm"> 
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Cuba: Pionero en América</h3>
+                            <div class="flex items-center justify-around space-x-2 mb-3">
+                                <div class="text-center">
+                                    <div class="text-2xl md:text-3xl font-bold text-blue-700">#1</div>
+                                    <p class="text-[10px] md:text-xs text-gray-600">País Americano en RSD</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-2xl md:text-3xl font-bold text-red-700">Top 10</div>
+                                    <p class="text-[10px] md:text-xs text-gray-600">Global</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 text-xs md:text-sm">
+                                Cuba se integró a la Ruta de la Seda Digital (RSD) en 2016, antes de la extensión formal de la BRI a ALC en 2017.
+                            </p>
+                        </div>
+                        
+                        <div class="relative slide-7-timeline-container pl-5"> <div class="slide-7-timeline-line"></div> 
+                            <h3 class="text-base md:text-lg font-semibold mb-3 text-gray-800">Cronología Cooperación</h3>
+                            
+                            <div class="slide-7-timeline-item"> <div class="slide-7-timeline-dot"></div> <div class="bg-white p-2 rounded-lg shadow-sm ml-2">
+                                    <h4 class="font-medium text-blue-800 text-sm">2016</h4>
+                                    <p class="text-xs text-gray-600">Incorporación a RSD</p>
+                                </div>
+                            </div>
+                            
+                            <div class="slide-7-timeline-item"> <div class="slide-7-timeline-dot"></div> <div class="bg-white p-2 rounded-lg shadow-sm ml-2">
+                                    <h4 class="font-medium text-blue-800 text-sm">2017</h4>
+                                    <p class="text-xs text-gray-600">Participación Alianza Industrial RSD</p>
+                                </div>
+                            </div>
+                            
+                            <div class="slide-7-timeline-item"> <div class="slide-7-timeline-dot"></div> <div class="bg-white p-2 rounded-lg shadow-sm ml-2">
+                                    <h4 class="font-medium text-blue-800 text-sm">2018</h4>
+                                    <p class="text-xs text-gray-600">Firma MOU Xi-Díaz-Canel</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-red-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <div class="flex items-start">
+                                <div class="bg-red-100 rounded-full p-2 mr-3 flex-shrink-0">
+                                    <i class="fas fa-tv text-red-700 text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-sm md:text-base text-red-800">Adopción Estándar TV Chino</h4>
+                                    <p class="text-xs text-gray-600 mt-1">
+                                        Primer país occidental, reduciendo dependencia tecnológica de EEUU.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-base md:text-lg font-semibold text-gray-800">Áreas de Cooperación Digital</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="feature-card bg-white p-2 shadow-sm">
+                                <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1 mr-2"><i class="fas fa-city text-blue-700 text-sm"></i></div><h4 class="font-medium text-blue-800 text-xs">Ciudades inteligentes</h4></div>
+                                <p class="text-[10px] text-gray-600">Soluciones urbanas</p>
+                            </div>
+                            <div class="feature-card bg-white p-2 shadow-sm">
+                                <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1 mr-2"><i class="fas fa-laptop-medical text-blue-700 text-sm"></i></div><h4 class="font-medium text-blue-800 text-xs">Telemedicina</h4></div>
+                                <p class="text-[10px] text-gray-600">Diagnóstico remoto</p>
+                            </div>
+                            <div class="feature-card bg-white p-2 shadow-sm">
+                                <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1 mr-2"><i class="fas fa-graduation-cap text-blue-700 text-sm"></i></div><h4 class="font-medium text-blue-800 text-xs">Educación en línea</h4></div>
+                                <p class="text-[10px] text-gray-600">Recursos digitales</p>
+                            </div>
+                            <div class="feature-card bg-white p-2 shadow-sm">
+                                <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1 mr-2"><i class="fas fa-cloud text-blue-700 text-sm"></i></div><h4 class="font-medium text-blue-800 text-xs">Computación nube</h4></div>
+                                <p class="text-[10px] text-gray-600">Infraestructura cloud</p>
+                            </div>
+                            <div class="feature-card bg-white p-2 shadow-sm">
+                                <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1 mr-2"><i class="fas fa-shopping-cart text-blue-700 text-sm"></i></div><h4 class="font-medium text-blue-800 text-xs">E-commerce</h4></div>
+                                <p class="text-[10px] text-gray-600">Plataformas y pagos</p>
+                            </div>
+                            <div class="feature-card bg-white p-2 shadow-sm">
+                                <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1 mr-2"><i class="fas fa-shield-alt text-blue-700 text-sm"></i></div><h4 class="font-medium text-blue-800 text-xs">Seguridad tech</h4></div>
+                                <p class="text-[10px] text-gray-600">Protección datos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-sm md:text-base font-semibold mb-2 text-gray-800">Proyectos Concretos</h3>
+                            <ul class="space-y-2 text-xs md:text-sm">
+                                <li class="flex items-start"><i class="fas fa-water text-blue-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Cable submarino</span><p class="text-gray-600">Con Shanghái Bell</p></div></li>
+                                <li class="flex items-start"><i class="fas fa-broadcast-tower text-blue-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Equipamiento Huawei</span><p class="text-gray-600">En telecom cubanas</p></div></li>
+                                <li class="flex items-start"><i class="fas fa-handshake text-blue-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Alianza Industrial RSD</span><p class="text-gray-600">Participación cubana</p></div></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-gradient-to-r from-blue-50 to-red-50 p-3 rounded-lg shadow-sm border-l-4 border-blue-400 z-10 flex-shrink-0">
+                    <h3 class="text-sm md:text-base font-medium mb-2 text-gray-800">Significado Estratégico</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="flex items-start"><i class="fas fa-map-marker-alt text-red-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Punto de entrada regional</span></div>
+                        <div class="flex items-start"><i class="fas fa-unlink text-red-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Alternativa a dependencia EEUU</span></div>
+                        <div class="flex items-start"><i class="fas fa-handshake text-red-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Modelo cooperación Sur-Sur</span></div>
+                    </div>
+                </div>
+            </div> <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-8"> 
+            <div class="slide-header"></div>
+            <div class="slide-content slide-8-content"> 
+                <div class="world-tech-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Competencia Estratégica: EE.UU. vs China</h2>
+                    <span class="presenter-badge ml-auto">Presentado por: <strong>Juan Sebastian Lopez</strong></span>
+                </div>
+                <div class="flex-grow relative z-10">
+                    <div class="vs-badge">VS</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 h-full items-stretch">
+                        <div class="strategy-card bg-blue-50 rounded-lg shadow-sm p-4 md:p-6 border-t-4 border-blue-700">
+                            <div class="flex items-center mb-3">
+                                <div class="bg-blue-100 rounded-full p-2 mr-3"><i class="fas fa-shield-alt text-blue-700 text-xl"></i></div>
+                                <div><h3 class="text-base md:text-lg font-bold text-blue-800">Red Limpia</h3><p class="text-xs text-blue-600">Estrategia de Estados Unidos</p></div>
+                            </div>
+                            <p class="text-gray-700 text-xs md:text-sm mb-3 flex-grow">Iniciativa (2020) para contrarrestar declive percibido de hegemonía tecnológica.</p>
+                            <h4 class="font-semibold text-blue-800 text-sm mb-2">Componentes Principales:</h4>
+                            <ul class="space-y-1 text-xs text-gray-700 mb-3">
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-1.5 fa-fw"></i><span>Operador Limpio: Exclusión proveedores "no confiables" (Huawei, ZTE).</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-1.5 fa-fw"></i><span>Tienda Limpia: Restricción apps chinas.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-1.5 fa-fw"></i><span>Nube Limpia: Restricción servicios cloud chinos.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-1.5 fa-fw"></i><span>Cable Limpio: Control infraestructura.</span></li>
+                            </ul>
+                            <div class="bg-white p-2 rounded-lg mt-auto"><h4 class="font-semibold text-gray-800 text-xs mb-1">Justificación oficial:</h4><p class="text-[10px] text-gray-700 italic">"Enfrentar amenaza a privacidad, seguridad y DDHH de 'actores autoritarios malignos como el PCCh'."</p></div>
+                        </div>
+                        <div class="strategy-card bg-red-50 rounded-lg shadow-sm p-4 md:p-6 border-t-4 border-red-700">
+                            <div class="flex items-center mb-3">
+                                <div class="bg-red-100 rounded-full p-2 mr-3"><i class="fas fa-globe-asia text-red-700 text-xl"></i></div>
+                                <div><h3 class="text-base md:text-lg font-bold text-red-800">Iniciativa Global sobre Seguridad de Datos</h3><p class="text-xs text-red-600">Estrategia de China</p></div>
+                            </div>
+                            <p class="text-gray-700 text-xs md:text-sm mb-3 flex-grow">Propuesta (2020) en respuesta, defendiendo enfoque multilateral e inclusivo.</p>
+                            <h4 class="font-semibold text-red-800 text-sm mb-2">Principios Fundamentales:</h4>
+                            <ul class="space-y-1 text-xs text-gray-700 mb-3">
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1.5 fa-fw"></i><span>Participación universal y equitativa.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1.5 fa-fw"></i><span>Respeto por soberanía digital.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1.5 fa-fw"></i><span>Reglas de seguridad de datos consensuadas.</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-1.5 fa-fw"></i><span>Cooperación tecnológica sin exclusiones.</span></li>
+                            </ul>
+                            <div class="bg-white p-2 rounded-lg mt-auto"><h4 class="font-semibold text-gray-800 text-xs mb-1">Enfoque declarado:</h4><p class="text-[10px] text-gray-700 italic">"Defender multilateralismo y promover reglas que respeten intereses de todos sin imponer ni excluir."</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 bg-gray-100 p-3 rounded-lg shadow-sm border-l-4 border-purple-500 z-10 flex-shrink-0">
+                    <h3 class="text-sm md:text-base font-semibold mb-1 text-gray-800">Implicaciones Globales</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="flex items-start"><i class="fas fa-layer-group text-purple-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Fragmentación de Internet</span></div>
+                        <div class="flex items-start"><i class="fas fa-chess text-purple-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Competencia por estándares</span></div>
+                        <div class="flex items-start"><i class="fas fa-balance-scale text-purple-700 mt-1 mr-2 fa-fw"></i><span class="text-[10px] md:text-xs text-gray-600">Países en la encrucijada</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-9"> 
+            <div class="slide-header"></div>
+            <div class="slide-content slide-9-content"> 
+                <div class="colombia-map-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Consecuencias para Colombia</h2>
+                    <span class="presenter-badge ml-auto">Presentado por: <strong>Verónica Abuabara</strong></span>
+                </div>
+
+                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 z-10 overflow-y-auto">
+                    <div class="space-y-4">
+                        <div class="slide-9-colombia-highlight-box p-3 md:p-4 rounded-lg shadow-sm"> 
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Situación Actual</h3>
+                            <div class="mb-3 border-b border-gray-300 pb-2">
+                                <div class="flex items-center mb-1">
+                                    <div class="bg-blue-100 rounded-full p-1.5 mr-2 flex-shrink-0"><i class="fas fa-handshake text-blue-700 text-sm"></i></div>
+                                    <h4 class="font-medium text-sm md:text-base text-gray-800">Colombia en proceso de adhesión</h4>
+                                </div>
+                                <p class="text-gray-700 text-xs md:text-sm">Planes para firmar acuerdo de incorporación a la BRI, consolidando giro estratégico.</p>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="news-item rounded p-1.5"><div class="text-[10px] text-blue-700">Mayo 2025</div><p class="text-xs text-gray-700">Viaje presidencial a China para formalizar ingreso.</p></div>
+                                <div class="news-item rounded p-1.5"><div class="text-[10px] text-blue-700">Oct 2024</div><p class="text-xs text-gray-700">Grupos de trabajo para negociar incorporación.</p></div>
+                                <div class="news-item rounded p-1.5"><div class="text-[10px] text-blue-700">Oct 2023</div><p class="text-xs text-gray-700">Elevación a asociación estratégica.</p></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Contexto Estratégico</h3>
+                            <ul class="space-y-2 text-xs md:text-sm">
+                                <li class="flex items-start"><i class="fas fa-globe-americas text-blue-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Reconfiguración geopolítica:</span> Tensión EEUU-China en ALC.</div></li>
+                                <li class="flex items-start"><i class="fas fa-chart-line text-blue-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">2do socio comercial:</span> Intercambios > $17.8B.</div></li>
+                                <li class="flex items-start"><i class="fas fa-subway text-blue-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Proyectos emblemáticos:</span> Metro de Bogotá.</div></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="feature-card bg-white p-3 md:p-4 shadow-sm border border-green-200">
+                            <div class="flex items-center mb-2"><div class="bg-green-100 rounded-full p-1.5 mr-2"><i class="fas fa-lightbulb text-green-700 text-sm"></i></div><h4 class="font-medium text-base md:text-lg text-green-800">Oportunidades</h4></div>
+                            <ul class="space-y-1 pl-6 text-xs md:text-sm">
+                                <li class="list-disc text-gray-700"><span class="font-medium">Infraestructura digital:</span> 5G, cables, data centers.</li>
+                                <li class="list-disc text-gray-700"><span class="font-medium">Transferencia tecnológica:</span> IA, IoT, cloud.</li>
+                                <li class="list-disc text-gray-700"><span class="font-medium">Financiamiento:</span> Créditos del BAII.</li>
+                                <li class="list-disc text-gray-700"><span class="font-medium">E-commerce:</span> Entrada de plataformas chinas.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-card bg-white p-3 md:p-4 shadow-sm border border-red-200">
+                            <div class="flex items-center mb-2"><div class="bg-red-100 rounded-full p-1.5 mr-2"><i class="fas fa-exclamation-triangle text-red-700 text-sm"></i></div><h4 class="font-medium text-base md:text-lg text-red-800">Desafíos</h4></div>
+                            <ul class="space-y-1 pl-6 text-xs md:text-sm">
+                                <li class="list-disc text-gray-700"><span class="font-medium">Tensión con EEUU:</span> Posible deterioro relaciones.</li>
+                                <li class="list-disc text-gray-700"><span class="font-medium">Dependencia tecnológica:</span> Riesgo de cambio de dependencia.</li>
+                                <li class="list-disc text-gray-700"><span class="font-medium">Seguridad:</span> Soberanía de datos, vigilancia.</li>
+                                <li class="list-disc text-gray-700"><span class="font-medium">Desequilibrio comercial:</span> Déficit con China.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-blue-50 to-red-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h4 class="text-sm md:text-base font-semibold text-gray-800 mb-2">Posible Modelo de Cuba para Colombia</h4>
+                            <p class="text-xs text-gray-700 mb-2">La experiencia de Cuba podría servir de referencia en:</p>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-white p-1.5 rounded shadow-sm"><span class="font-medium text-blue-800">TV digital:</span> Adopción estándares.</div>
+                                <div class="bg-white p-1.5 rounded shadow-sm"><span class="font-medium text-blue-800">Telemedicina:</span> Salud digital.</div>
+                                <div class="bg-white p-1.5 rounded shadow-sm"><span class="font-medium text-blue-800">Educación:</span> Plataformas online.</div>
+                                <div class="bg-white p-1.5 rounded shadow-sm"><span class="font-medium text-blue-800">Smart Cities:</span> IoT y big data.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-gray-100 p-3 rounded-lg shadow-sm border-l-4 border-blue-500 z-10 flex-shrink-0">
+                    <h3 class="text-sm md:text-base font-semibold mb-1 text-gray-800">Pregunta Clave</h3>
+                    <p class="text-xs md:text-sm text-gray-700">
+                        ¿Podrá Colombia balancear la cooperación tecnológica con China manteniendo relaciones estables con EEUU en un contexto de creciente rivalidad geopolítica digital?
+                    </p>
+                </div>
+            </div> <div class="slide-footer"></div>
+        </div>
+        
+        <div class="slide" id="slide-10">
+            <div class="slide-header"></div>
+            <div class="slide-content slide-10-content">
+                <div class="future-tech-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Tendencias Futuras de la Ruta Digital</h2>
+                    <span class="presenter-badge ml-auto">Presentado por: <strong>Verónica Abuabara</strong></span>
+                </div>
+                
+                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 z-10 overflow-y-auto">
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Proyecciones 2025-2030</h3>
+                            <div class="chart-container mb-2">
+                                <canvas id="forecastChart"></canvas>
+                            </div>
+                            <p class="text-[10px] md:text-xs text-gray-600 italic">
+                                Proyección de crecimiento en infraestructura digital asociada a la Iniciativa de la Franja y la Ruta.
+                            </p>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Expansión Tecnológica</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="trend-card bg-white p-2 rounded shadow-sm">
+                                    <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1.5 mr-1.5"><i class="fas fa-network-wired text-blue-700 text-sm"></i></div><span class="font-medium text-blue-800 text-xs">6G y más allá</span></div>
+                                    <p class="text-[10px] text-gray-600">Inversión en tecnología post-5G.</p>
+                                </div>
+                                <div class="trend-card bg-white p-2 rounded shadow-sm">
+                                    <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1.5 mr-1.5"><i class="fas fa-robot text-blue-700 text-sm"></i></div><span class="font-medium text-blue-800 text-xs">IA avanzada</span></div>
+                                    <p class="text-[10px] text-gray-600">Integración IA en toda la RSD.</p>
+                                </div>
+                                <div class="trend-card bg-white p-2 rounded shadow-sm">
+                                    <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1.5 mr-1.5"><i class="fas fa-microchip text-blue-700 text-sm"></i></div><span class="font-medium text-blue-800 text-xs">Soberanía digital</span></div>
+                                    <p class="text-[10px] text-gray-600">Autosuficiencia en chips.</p>
+                                </div>
+                                <div class="trend-card bg-white p-2 rounded shadow-sm">
+                                    <div class="flex items-center mb-1"><div class="bg-blue-100 rounded-full p-1.5 mr-1.5"><i class="fas fa-satellite text-blue-700 text-sm"></i></div><span class="font-medium text-blue-800 text-xs">Internet orbital</span></div>
+                                    <p class="text-[10px] text-gray-600">Constelaciones de satélites.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-red-50 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-red-800">Nuevas Direcciones Estratégicas</h3>
+                            <ul class="space-y-2 text-xs md:text-sm">
+                                <li class="flex items-start"><i class="fas fa-coins text-red-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Moneda digital global:</span><p class="text-gray-600">Expansión del Yuan digital.</p></div></li>
+                                <li class="flex items-start"><i class="fas fa-shield-alt text-red-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Gobernanza tecnológica:</span> Influencia en estándares globales.</div></li>
+                                <li class="flex items-start"><i class="fas fa-graduation-cap text-red-700 mt-1 mr-2 fa-fw"></i><div><span class="font-medium text-gray-800">Ecosistemas educativos:</span> Formación según modelos chinos.</div></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Enfoque Regional Emergente</h3>
+                            <div class="space-y-2">
+                                <div><div class="flex items-center justify-between text-[10px] text-gray-500 mb-0.5"><span>América Latina y Caribe</span><span class="font-medium">Alto crecimiento</span></div><div class="h-1.5 bg-gray-200 rounded-full"><div class="h-full bg-red-600 rounded-full" style="width: 85%"></div></div></div>
+                                <div><div class="flex items-center justify-between text-[10px] text-gray-500 mb-0.5"><span>África</span><span class="font-medium">Crecimiento sostenido</span></div><div class="h-1.5 bg-gray-200 rounded-full"><div class="h-full bg-red-600 rounded-full" style="width: 75%"></div></div></div>
+                                <div><div class="flex items-center justify-between text-[10px] text-gray-500 mb-0.5"><span>Sudeste Asiático</span><span class="font-medium">Consolidación</span></div><div class="h-1.5 bg-gray-200 rounded-full"><div class="h-full bg-blue-600 rounded-full" style="width: 90%"></div></div></div>
+                                <div><div class="flex items-center justify-between text-[10px] text-gray-500 mb-0.5"><span>Europa</span><span class="font-medium">Desarrollo selectivo</span></div><div class="h-1.5 bg-gray-200 rounded-full"><div class="h-full bg-blue-600 rounded-full" style="width: 50%"></div></div></div>
+                            </div>
+                            <p class="text-[10px] text-gray-500 italic mt-2">Prioridades regionales de expansión de la Ruta Digital.</p>
+                        </div>
+                        
+                        <div class="p-3 bg-gradient-to-r from-blue-50 to-red-50 rounded-lg shadow-sm border-l-4 border-red-500">
+                            <h4 class="font-medium text-gray-800 text-sm mb-1">Expansión del Modelo Cubano</h4>
+                            <p class="text-xs text-gray-600">La experiencia pionera de Cuba podría replicarse como modelo en ALC (TV digital, telemedicina, educación).</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-gray-100 p-3 rounded-lg shadow-sm z-10 flex-shrink-0">
+                    <h3 class="text-sm md:text-base font-medium mb-1 text-gray-800">Impacto Global Potencial</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="flex items-start"><div class="bg-purple-100 rounded-full p-1.5 mr-1.5 flex-shrink-0"><i class="fas fa-balance-scale text-purple-700 text-xs"></i></div><div><h4 class="font-medium text-gray-800 text-xs">Multipolaridad tech</h4><p class="text-[10px] text-gray-600">Equilibrio China-Occidente.</p></div></div>
+                        <div class="flex items-start"><div class="bg-purple-100 rounded-full p-1.5 mr-1.5 flex-shrink-0"><i class="fas fa-users text-purple-700 text-xs"></i></div><div><h4 class="font-medium text-gray-800 text-xs">Inclusión digital</h4><p class="text-[10px] text-gray-600">Reducción brecha.</p></div></div>
+                        <div class="flex items-start"><div class="bg-purple-100 rounded-full p-1.5 mr-1.5 flex-shrink-0"><i class="fas fa-lock text-purple-700 text-xs"></i></div><div><h4 class="font-medium text-gray-800 text-xs">Ciberseguridad</h4><p class="text-[10px] text-gray-600">Nuevos modelos.</p></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer"></div>
+        </div>
+
+        <div class="slide" id="slide-11">
+            <div class="slide-header"></div>
+            <div class="slide-content slide-11-content">
+                <div class="conclusion-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Conclusiones Generales</h2>
+                    <span class="presenter-badge ml-auto">Grupo Completo</span>
+                </div>
+
+                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 z-10 items-center">
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="flex items-center">
+                            <div class="summary-circle bg-gradient-to-r from-blue-700 to-blue-500">
+                                <i class="fas fa-globe-asia"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg md:text-xl font-semibold text-gray-800">Transformación Global</h3>
+                                <p class="text-gray-700 text-xs md:text-sm">
+                                    La Ruta Digital está reconfigurando el panorama de la infraestructura digital mundial e impulsando un nuevo modelo de cooperación internacional.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="summary-circle bg-gradient-to-r from-red-700 to-red-500">
+                                <i class="fas fa-flag"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg md:text-xl font-semibold text-gray-800">Cuba: Caso Pionero</h3>
+                                <p class="text-gray-700 text-xs md:text-sm">
+                                    Como primer país americano en integrarse (2016), Cuba representa un caso emblemático de adopción completa del modelo digital chino en el hemisferio occidental.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="summary-circle bg-gradient-to-r from-blue-700 to-blue-500">
+                                <i class="fas fa-chess"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg md:text-xl font-semibold text-gray-800">Multipolaridad Digital</h3>
+                                <p class="text-gray-700 text-xs md:text-sm">
+                                    La competencia entre la 'Red Limpia' estadounidense y la 'Iniciativa Global sobre Seguridad de Datos' china está creando un ecosistema digital multipolar.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 md:space-y-6">
+                        <div class="conclusion-card bg-gradient-to-r from-blue-50 to-blue-100 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-blue-800">Implicaciones Estratégicas</h3>
+                            <ul class="space-y-2 text-xs md:text-sm">
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Transición del modelo <span class="font-medium">Made in China</span> a <span class="font-medium">Designed in China</span> con proyección global</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Competencia acelerada por el control de estándares tecnológicos (5G/6G, New IP, protocolos de seguridad)</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-blue-700 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Creciente fragmentación del ciberespacio global en bloques tecnológicos alineados geopolíticamente</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="conclusion-card bg-gradient-to-r from-red-50 to-red-100 p-3 md:p-4 rounded-lg shadow-sm">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-red-800">Relevancia para América Latina</h3>
+                            <ul class="space-y-2 text-xs md:text-sm">
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Cuba como modelo regional para implementación de infraestructuras digitales chinas en el Gran Caribe</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">Colombia avanza hacia la incorporación formal a la Ruta de la Seda, con potenciales beneficios en infraestructura digital</span></li>
+                                <li class="flex items-start"><i class="fas fa-check-circle text-red-700 mt-1 mr-2 fa-fw"></i><span class="text-gray-700">La región enfrenta el desafío de equilibrar relaciones con EE.UU. y China en un contexto de rivalidad tecnológica</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="conclusion-card bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-200">
+                            <h3 class="text-base md:text-lg font-semibold mb-2 text-gray-800">Oportunidades y Desafíos</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <h4 class="font-medium text-green-700 text-sm mb-1">Oportunidades</h4>
+                                    <ul class="text-xs text-gray-600"><li>• Infraestructura digital</li><li>• Transferencia de conocimientos</li><li>• Reducción dependencias</li></ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-red-700 text-sm mb-1">Desafíos</h4>
+                                    <ul class="text-xs text-gray-600"><li>• Nueva dependencia</li><li>• Soberanía digital</li><li>• Fricción geopolítica</li></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 bg-gradient-to-r from-blue-50 via-purple-50 to-red-50 p-3 md:p-4 rounded-lg shadow-sm z-10 border-l-4 border-blue-500 flex-shrink-0">
+                    <h3 class="text-base md:text-lg font-semibold mb-1 text-gray-800">Reflexión Final</h3>
+                    <p class="text-gray-700 text-xs md:text-sm">
+                        La Ruta Digital de China representa uno de los proyectos más ambiciosos de reconfiguración tecnológica global del siglo XXI. Para países como Colombia y Cuba, ofrece alternativas para su desarrollo digital, pero también plantea cuestiones fundamentales sobre independencia tecnológica, privacidad de datos y alineamiento geopolítico que cada nación debe considerar cuidadosamente.
+                    </p>
+                </div>
+            </div> 
+            <div class="slide-footer"></div>
+        </div>
+        
+        <div class="slide" id="slide-bibliography"> 
+            <div class="slide-header"></div>
+            <div class="slide-content slide-12-content"> 
+                <div class="bibliography-bg"></div>
+                <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
+                    <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Bibliografía</h2>
+                    <span class="presenter-badge ml-auto">Equipo Completo</span>
+                </div>
+
+                <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 z-10 overflow-y-auto">
+                    <div class="space-y-1">
+                        <h3 class="font-semibold text-base md:text-lg mb-2 text-gray-800">Referencias Académicas</h3>
+                        <div class="space-y-1 text-xs md:text-sm">
+                            <div class="reference-item"><p><span class="font-medium">Fabelo Concepción, S. y González Sáez, R.</span> (2023). La ruta digital... <span class="italic">China-nuevo-mapa</span>, 249-280.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Parra, A.</span> (2020). La Ruta de la Seda Digital... <span class="italic">Real Instituto Elcano</span>, ARI 2/2020.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Razzotti, A.</span> (2018). La Ruta de la Seda Digital... <span class="italic">Nueva Sociedad</span>.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">González, R.</span> (2020). La transformación del tablero mundial... <span class="italic">Observatorio de la Política China</span>, 47-48.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Guo, H.</span> (2018). Steps to the Digital Silk Road. <span class="italic">Nature</span>, 554, 25-27.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Lele, A. & Roy, K.</span> (2020). Artificial Intelligence... <span class="italic">Journal of Defense Studies</span>, 14(1-2).</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Gómez, E.</span> (2021). El yuan digital... <span class="italic">Observatorio Económico de Asia</span>.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Barbieri, M.</span> (2019). El mundo según Jack Ma... <span class="italic">La Vanguardia</span>.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Hillman, J.</span> (2021). Competir con la Ruta de la Seda Digital... <span class="italic">CSIS</span>.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <h3 class="font-semibold text-base md:text-lg mb-2 text-gray-800">Fuentes de Datos y Recursos en Línea</h3>
+                        <div class="space-y-1 text-xs md:text-sm">
+                            <div class="reference-item"><p><span class="font-medium">Statista</span> (2020). Las marcas de mayor valor...</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Statista</span> (2019). Las compañías líderes en 5G.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Mena, F.</span> (2020). Las 10 compañías unicornio...</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Oficina del Grupo Dirigente...</span> (2019). Construyendo la Franja y la Ruta...</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Rus, C.</span> (2020). China quiere crear un nuevo Internet... <span class="italic">Xakata</span>.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">Latinamerica</span> (2019). Huawei apunta a toda Latinoamérica.</p></div>
+                            <div class="reference-item"><p><span class="font-medium">SEA-ME-WE 5</span> (2017). SEA-ME-WE 5...</p></div>
+                            <div class="reference-item"><p><span class="font-medium">NEC</span> (2016). SJC2 Submarine Cable.</p></div>
+                        </div>
+                        
+                        <h3 class="font-semibold text-base md:text-lg mt-3 mb-1 text-gray-800">Sitios Web Oficiales</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs md:text-sm">
+                            <div class="bg-gray-100 p-2 rounded shadow-sm reference-item"><p><span class="font-medium">Belt and Road Portal:</span> eng.yidaiyilu.gov.cn</p></div>
+                            <div class="bg-gray-100 p-2 rounded shadow-sm reference-item"><p><span class="font-medium">Mincom Cuba:</span> mincom.gob.cu</p></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 z-10 flex-shrink-0">
+                    <h3 class="font-semibold text-sm md:text-base mb-2 text-gray-800">Trabajo Realizado Por:</h3>
+                    <div class="flex flex-wrap justify-around gap-2">
+                        <div class="team-badge p-2 rounded-lg shadow-sm text-center flex-1 min-w-[100px] max-w-[18%]">
+                            <p class="font-medium text-blue-800 text-xs md:text-sm">Marta Rocio Gomez G</p>
+                            <p class="text-[10px] text-gray-600">Intro & Tesis</p>
+                        </div>
+                        <div class="team-badge p-2 rounded-lg shadow-sm text-center flex-1 min-w-[100px] max-w-[18%]">
+                            <p class="font-medium text-blue-800 text-xs md:text-sm">Liliana Rocío Guarín C</p>
+                            <p class="text-[10px] text-gray-600">Evolución Digital</p>
+                        </div>
+                        <div class="team-badge p-2 rounded-lg shadow-sm text-center flex-1 min-w-[100px] max-w-[18%]">
+                            <p class="font-medium text-blue-800 text-xs md:text-sm">Efrén Bohorquez V</p>
+                            <p class="text-[10px] text-gray-600">Impl. Regional</p>
+                        </div>
+                        <div class="team-badge p-2 rounded-lg shadow-sm text-center flex-1 min-w-[100px] max-w-[18%]">
+                            <p class="font-medium text-blue-800 text-xs md:text-sm">Juan Sebastian Lopez</p>
+                            <p class="text-[10px] text-gray-600">Cuba en RSD</p>
+                        </div>
+                        <div class="team-badge p-2 rounded-lg shadow-sm text-center flex-1 min-w-[100px] max-w-[18%]">
+                            <p class="font-medium text-blue-800 text-xs md:text-sm">Verónica Abuabara</p>
+                            <p class="text-[10px] text-gray-600">Consecuencias y Tendencias</p> </div>
+                    </div>
+                </div>
+                
+                <div class="mt-auto pt-2 flex justify-between items-center z-10 flex-shrink-0">
+                    <div class="text-[10px] md:text-xs text-gray-600">
+                        <span class="font-medium">Curso:</span> TECNICAS DEL PROYECTO GEOPOLITICO-TAE
+                    </div>
+                    <div class="text-[10px] md:text-xs text-gray-600">
+                        <span class="font-medium">Fecha:</span> Mayo 2025
+                    </div>
+                </div>
+            </div> <div class="slide-footer"></div>
+        </div>
+
+
+    </div> <div id="navigation-controls">
+        <button id="prev-slide" title="Diapositiva Anterior"><i class="fas fa-chevron-left"></i></button>
+        <span id="slide-counter">1 / 11</span> <button id="next-slide" title="Siguiente Diapositiva"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        // Simple JavaScript for slide navigation
+        const slides = document.querySelectorAll('.slide');
+        const prevButton = document.getElementById('prev-slide');
+        const nextButton = document.getElementById('next-slide');
+        const slideCounter = document.getElementById('slide-counter');
+        let currentSlide = 0;
+        const totalSlides = slides.length; 
+        let forecastChartInstance = null; 
+
+        function initializeForecastChart() {
+            const chartCanvas = document.getElementById('forecastChart');
+            if (!chartCanvas) return; 
+
+            if (forecastChartInstance) {
+                forecastChartInstance.destroy();
+            }
+
+            const ctx = chartCanvas.getContext('2d');
+            forecastChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'],
+                    datasets: [
+                        {
+                            label: 'Infraestructura 5G/6G',
+                            data: [20, 35, 48, 65, 78, 85, 92, 98],
+                            borderColor: '#003366',
+                            backgroundColor: 'rgba(0, 51, 102, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Plataformas Digitales Chinas',
+                            data: [15, 28, 42, 60, 75, 88, 95, 100],
+                            borderColor: '#cc0000',
+                            backgroundColor: 'rgba(204, 0, 0, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Chips y Hardware Propio',
+                            data: [10, 22, 38, 55, 70, 82, 90, 96],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, font: { size: 10 } }
+                        },
+                        tooltip: { mode: 'index' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true, max: 100,
+                            title: { display: true, text: 'Índice de Desarrollo (%)', font: { size: 10 } },
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function showSlide(index) {
+            if (index < 0 || index >= totalSlides) {
+                console.error("Invalid slide index:", index);
+                return;
+            }
+
+            slides.forEach((slide) => {
+                slide.classList.remove('active');
+                const contentArea = slide.querySelector('.slide-content');
+                if (contentArea) contentArea.scrollTop = 0;
+            });
+
+            slides[index].classList.add('active');
+            currentSlide = index;
+            slideCounter.textContent = `${index + 1} / ${totalSlides}`;
+            prevButton.disabled = index === 0;
+            nextButton.disabled = index === totalSlides - 1;
+
+            if (slides[index].id === 'slide-5') {
+                const marketShareFills = slides[index].querySelectorAll('.market-share-fill');
+                marketShareFills.forEach(fill => {
+                    const targetWidth = fill.style.width; 
+                    fill.style.width = '0%'; 
+                    setTimeout(() => { fill.style.width = targetWidth; }, 50); 
+                });
+            }
+
+            if (slides[index].id === 'slide-10') { 
+                initializeForecastChart();
+            }
+        }
+
+        nextButton.addEventListener('click', () => {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            }
+        });
+
+        prevButton.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.isContentEditable) { return; }
+            
+            if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { 
+                 event.preventDefault(); nextButton.click();
+            } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+                 event.preventDefault(); prevButton.click();
+            }
+        });
+
+        if (totalSlides > 0) {
+             showSlide(0);
+        } else {
+            console.error("No slides found.");
+             prevButton.disabled = true; nextButton.disabled = true; slideCounter.textContent = "0 / 0";
+        }
+
+    </script>
+
+</body>
+</html>
