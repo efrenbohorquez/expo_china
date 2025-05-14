@@ -1,16 +1,19 @@
-<<<<<<< HEAD
-# expo_china
-diapositivas expo_china ///////////////////
-=======
 # Expo China Project
 
 ## Descripción
 Este proyecto es una presentación web sobre la iniciativa "Expo China". Incluye información sobre diversos aspectos relacionados con la iniciativa, así como gráficos y datos relevantes.
 
+## Presentadores
+- Marta Rocio Gomez G (Intro & Tesis)
+- Liliana Rocío Guarín C (Evolución Digital)
+- Efrén Bohorquez V (Impl. Regional)
+- Juan Sebastian Lopez (Cuba en RSD, Competencia Estratégica)
+- Verónica Abuabara (Consecuencias y Tendencias)
+
 ## Estructura del Proyecto
 El proyecto tiene la siguiente estructura de archivos:
 
-```
+```text
 expo_china
 ├── assets
 │   ├── css
@@ -35,4 +38,3 @@ Las contribuciones son bienvenidas. Si deseas contribuir, por favor abre un issu
 
 ## Licencia
 Este proyecto está bajo la Licencia MIT.
->>>>>>> 66fd35937d67b2740617fe493736b4658d313e0f
