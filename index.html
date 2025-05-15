@@ -1512,6 +1512,68 @@
              prevButton.disabled = true; nextButton.disabled = true; slideCounter.textContent = "0 / 0";
         }
 
+        // Transiciones suaves entre diapositivas y edición de presentadores
+        (function() {
+            // Variables globales ya declaradas arriba
+            function showSlide(index) {
+                if (index < 0 || index >= totalSlides) return;
+                slides.forEach((slide, i) => {
+                    if (i === index) {
+                        slide.classList.add('active');
+                        slide.style.opacity = 1;
+                        slide.style.transition = 'opacity 0.7s';
+                    } else {
+                        slide.classList.remove('active');
+                        slide.style.opacity = 0;
+                        slide.style.transition = 'opacity 0.7s';
+                    }
+                });
+                currentSlide = index;
+                slideCounter.textContent = `${index + 1} / ${totalSlides}`;
+                prevButton.disabled = index === 0;
+                nextButton.disabled = index === totalSlides - 1;
+            }
+
+            nextButton.addEventListener('click', () => {
+                if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1);
+            });
+            prevButton.addEventListener('click', () => {
+                if (currentSlide > 0) showSlide(currentSlide - 1);
+            });
+
+            // Permitir modificar presentadores desde la interfaz
+            function enablePresenterEdit() {
+                document.querySelectorAll('.presenter-badge strong').forEach(el => {
+                    el.style.cursor = 'pointer';
+                    el.title = 'Haz clic para editar el nombre del presentador';
+                    el.addEventListener('click', function () {
+                        const current = this.textContent;
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = current;
+                        input.style.fontWeight = 'bold';
+                        input.style.fontSize = 'inherit';
+                        input.style.width = (current.length + 2) + 'ch';
+                        this.replaceWith(input);
+                        input.focus();
+                        input.addEventListener('blur', function () {
+                            const strong = document.createElement('strong');
+                            strong.textContent = input.value;
+                            input.replaceWith(strong);
+                            enablePresenterEdit();
+                        });
+                        input.addEventListener('keydown', function (e) {
+                            if (e.key === 'Enter') input.blur();
+                        });
+                    });
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                showSlide(0);
+                enablePresenterEdit();
+            });
+        })();
     </script>
 
 </body>
