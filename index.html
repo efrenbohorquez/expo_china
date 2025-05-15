@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Inline style replacements for progress bars */
+        .market-share-38 { width: 38%; }
+        .market-share-42 { width: 42%; }
+        .market-share-35 { width: 35%; }
+        .market-share-30 { width: 30%; }
+        .bar-85 { width: 85%; }
+        .bar-75 { width: 75%; }
+        .bar-90 { width: 90%; }
+        .bar-50 { width: 50%; }
         /* Basic body styling */
         body {
             font-family: 'Roboto', sans-serif;
@@ -118,7 +127,6 @@
          }
         
         /* Styles for Slide 3 (Tesis de los Autores) */
-        .slide-3-content {} /* Renamed from slide-new-tesis-content */
         .silk-road-bg { 
             position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.04;
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/d/d5/Silk_Road_in_the_I_century_AD_-_en.svg');
@@ -195,7 +203,6 @@
          .region-icon i { font-size: 24px; }
 
         /* Styles specific to Slide 7 (Cuba) */
-        .slide-7-content { }
         .cuba-map-bg {
              position: absolute; bottom: 5px; right: 5px; width: 30%; height: 30%; opacity: 0.05;
              background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bd/Cuba_%28orthographic_projection%29.svg');
@@ -224,7 +231,6 @@
          }
         
         /* Styles for Slide 8 (Competencia Estratégica) */
-        .slide-8-content {} 
         .world-tech-bg {
              position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.03;
              background-image: url('https://cdn-icons-png.flaticon.com/512/2784/2784487.png');
@@ -248,7 +254,6 @@
         }
         
         /* Styles specific to Slide 9 (Colombia) */
-        .slide-9-content {} 
         .colombia-map-bg {
             position: absolute; bottom: 5px; right: 5px; width: 30%; height: 30%; opacity: 0.04;
             background-image: url('https://upload.wikimedia.org/wikipedia/commons/a/a3/COL_orthographic.svg');
@@ -263,7 +268,6 @@
         }
 
         /* Styles for Slide 10 (Tendencias Futuras) */
-        .slide-10-content {}
         .future-tech-bg {
             position: absolute; bottom: 5px; right: 5px; width: 30%; height: 30%; opacity: 0.04; 
             background-image: url('https://cdn-icons-png.flaticon.com/512/4616/4616734.png');
@@ -279,7 +283,6 @@
         .chart-container { position: relative; height: 200px; width: 100%; } 
 
         /* Styles for new Slide 11 (Conclusiones) */
-        .slide-11-content {}
         .conclusion-bg {
             position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.03;
             background-image: url('https://cdn-icons-png.flaticon.com/512/2784/2784487.png'); /* Reusing an existing icon, can be changed */
@@ -299,7 +302,7 @@
 
 
         /* Styles specific to Slide 12 (Bibliography) */
-        .slide-12-content { } /* Renamed from slide-11-content */
+        /* .slide-12-content { }  Renamed from slide-11-content */
         .bibliography-bg {
              position: absolute; top: 0; right: 0; width: 100%; height: 100%; opacity: 0.02;
              background-image: url('https://cdn-icons-png.flaticon.com/512/29/29302.png');
@@ -736,10 +739,10 @@
         <div class="slide" id="slide-5">
              <div class="slide-header"></div>
              <div class="slide-content slide-5-content"> 
-                 <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
-                     <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Principales Actores Tecnológicos</h2>
-                     <span class="presenter-badge ml-auto">Presentado por: <strong>Efrén Bohorquez V</strong></span>
-                 </div>
+                                <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-blue-700"><i class="fas fa-broadcast-tower"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Huawei & ZTE</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">Telecom y 5G.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>5G:</span><span class="font-medium">91 países</span></div><div class="market-share"><div class="market-share-fill market-share-38"></div></div></div>
+                                                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-red-700"><i class="fas fa-shopping-cart"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Alibaba</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">E-comm, fintech, cloud.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>E-comm:</span><span class="font-medium">42% global</span></div><div class="market-share"><div class="market-share-fill market-share-42"></div></div></div>
+                                                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-blue-700"><i class="fas fa-comment-dots"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Tencent</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">WeChat, digital, IA.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>WeChat:</span><span class="font-medium">1.1B+</span></div><div class="market-share"><div class="market-share-fill market-share-35"></div></div></div>
+                                                                 <div class="company-card bg-white p-3 shadow-sm"><div class="company-logo text-red-700"><i class="fas fa-search"></i></div><h4 class="font-medium text-base md:text-lg mb-1">Baidu & ByteDance</h4><p class="text-gray-600 text-xs md:text-sm mb-2 flex-grow">Búsqueda, IA, TikTok.</p><div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>Presencia:</span><span class="font-medium">150+</span></div><div class="market-share"><div class="market-share-fill market-share-30"></div></div></div>
                  <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 z-10 overflow-y-auto">
                      <div class="space-y-4 md:space-y-6">
                          <div class="bg-gray-50 p-3 md:p-4 rounded-lg shadow-sm">
@@ -979,7 +982,7 @@
                 <div class="world-tech-bg"></div>
                 <div class="mb-4 flex justify-between items-center z-10 flex-shrink-0">
                     <h2 class="text-xl md:text-2xl lg:text-3xl font-bold title-gradient">Competencia Estratégica: EE.UU. vs China</h2>
-                    <span class="presenter-badge ml-auto">Presentado por: <strong>Juan Sebastian Lopez</strong></span>
+                    <span class="presenter-badge ml-auto">Presentado por: <strong>Juan Sebastián López</strong></span>
                 </div>
                 
                 <div class="flex-grow relative z-10">
