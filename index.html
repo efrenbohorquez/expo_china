@@ -1514,17 +1514,19 @@
 
         // Transiciones suaves entre diapositivas y edición de presentadores
         (function() {
-            // Variables globales ya declaradas arriba
-            function showSlide(index) {
+            // Solo una función showSlide activa
+            function showSlideWithTransition(index) {
                 if (index < 0 || index >= totalSlides) return;
                 slides.forEach((slide, i) => {
                     if (i === index) {
                         slide.classList.add('active');
                         slide.style.opacity = 1;
+                        slide.style.pointerEvents = 'auto';
                         slide.style.transition = 'opacity 0.7s';
                     } else {
                         slide.classList.remove('active');
                         slide.style.opacity = 0;
+                        slide.style.pointerEvents = 'none';
                         slide.style.transition = 'opacity 0.7s';
                     }
                 });
@@ -1532,13 +1534,17 @@
                 slideCounter.textContent = `${index + 1} / ${totalSlides}`;
                 prevButton.disabled = index === 0;
                 nextButton.disabled = index === totalSlides - 1;
+                // Si hay gráficos, inicializarlos aquí si es necesario
+                if (slides[index].id === 'slide-10') {
+                    if (typeof initializeForecastChart === 'function') initializeForecastChart();
+                }
             }
 
             nextButton.addEventListener('click', () => {
-                if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1);
+                if (currentSlide < totalSlides - 1) showSlideWithTransition(currentSlide + 1);
             });
             prevButton.addEventListener('click', () => {
-                if (currentSlide > 0) showSlide(currentSlide - 1);
+                if (currentSlide > 0) showSlideWithTransition(currentSlide - 1);
             });
 
             // Permitir modificar presentadores desde la interfaz
@@ -1546,7 +1552,7 @@
                 document.querySelectorAll('.presenter-badge strong').forEach(el => {
                     el.style.cursor = 'pointer';
                     el.title = 'Haz clic para editar el nombre del presentador';
-                    el.addEventListener('click', function () {
+                    el.onclick = function () {
                         const current = this.textContent;
                         const input = document.createElement('input');
                         input.type = 'text';
@@ -1556,21 +1562,27 @@
                         input.style.width = (current.length + 2) + 'ch';
                         this.replaceWith(input);
                         input.focus();
-                        input.addEventListener('blur', function () {
+                        input.onblur = function () {
                             const strong = document.createElement('strong');
                             strong.textContent = input.value;
                             input.replaceWith(strong);
                             enablePresenterEdit();
-                        });
-                        input.addEventListener('keydown', function (e) {
+                        };
+                        input.onkeydown = function (e) {
                             if (e.key === 'Enter') input.blur();
-                        });
-                    });
+                        };
+                    };
                 });
             }
 
             document.addEventListener('DOMContentLoaded', () => {
-                showSlide(0);
+                // Inicializa opacidad de todas las diapositivas
+                slides.forEach((slide, i) => {
+                    slide.style.opacity = i === 0 ? 1 : 0;
+                    slide.style.pointerEvents = i === 0 ? 'auto' : 'none';
+                    slide.style.transition = 'opacity 0.7s';
+                });
+                showSlideWithTransition(0);
                 enablePresenterEdit();
             });
         })();
